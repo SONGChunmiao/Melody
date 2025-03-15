@@ -1,290 +1,174 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
-<head>
-    <meta charset="UTF-8">
+  <head>
+    <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>打工人幸福度计算器</title>
-    <style>
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: #f5f5f7;
-            color: #1d1d1f;
-        }
-        .container {
-            max-width: 600px;
-            margin: 50px auto;
-            padding: 20px;
-            background-color: #fff;
-            border-radius: 12px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-            text-align: center;
-        }
-        input[type="number"], select {
-            width: 100%;
-            padding: 12px;
-            margin: 10px 0;
-            border: 1px solid #d2d2d7;
-            border-radius: 8px;
-            box-sizing: border-box;
-            font-size: 16px;
-        }
-        button {
-            padding: 12px 24px;
-            background-color: #0071e3;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 16px;
-            margin-top: 20px;
-        }
-        button:disabled {
-            background-color: #ccc;
-            cursor: not-allowed;
-        }
-        button:hover:enabled {
-            background-color: #005bb5;
-        }
-        .hidden {
-            display: none;
-        }
-        .error {
-            color: red;
-            font-size: 0.9em;
-        }
-        .result {
-            font-size: 1.2em;
-            color: #333;
-            margin-top: 20px;
-        }
-    </style>
-</head>
-<body>
-    <!-- Page 1 -->
-    <div class="container" id="page1">
-        <h1>打工人幸福度计算器</h1>
-        <p>请输入您的平均月薪（单位：元）：</p>
-        <input type="number" id="salary" name="salary" min="0" step="0.01" required>
-        <button type="button" onclick="nextPage1()">下一步</button>
+    <title>工作时间统计</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <!--preload-links-->
+    <!--app-context-->
+  </head>
+  <body>
+    <div class="background-decoration"></div>
+    <div class="background-decoration"></div>
+
+    <div class="container">
+        <div class="date-display">
+            <span id="current-date"></span>
+        </div>
+        <h1>工作时间统计</h1>
+        
+        <!-- 历史数据提示 -->
+        <div id="history-alert" class="history-alert hidden">
+            <span class="close-btn" onclick="closeHistoryAlert()">×</span>
+            <div id="history-content"></div>
+        </div>
+        
+        <!-- 工作按钮 -->
+        <div class="button-group">
+            <div class="status-header">
+                <h2>工作状态</h2>
+                <div class="real-time-counter" id="real-time-counter">
+                    <span id="counter-hours">00</span>:<span id="counter-minutes">00</span>:<span id="counter-seconds">00</span>
+                </div>
+            </div>
+            <div class="fish-buttons">
+                <div class="fish-btn-pair">
+                    <button id="start-work" class="action-btn work-btn" onclick="startWork()">
+                        <span class="material-icons btn-icon">work</span>上班
+                    </button>
+                    <button id="end-work" class="action-btn work-btn" disabled onclick="endWork()">
+                        <span class="material-icons btn-icon">home</span>下班
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 摸鱼按钮 -->
+        <div class="button-group">
+            <div class="status-header">
+                <h2>休息状态</h2>
+                <div class="real-time-counter fish-counter" id="fish-real-time-counter">
+                    <span id="fish-counter-hours">00</span>:<span id="fish-counter-minutes">00</span>:<span id="fish-counter-seconds">00</span>
+                </div>
+            </div>
+            <div class="fish-buttons">
+                <div class="fish-btn-pair">
+                    <button id="start-walk" class="action-btn fish-btn" onclick="startWalk()">
+                        <span class="material-icons btn-icon">directions_walk</span>出发遛弯
+                    </button>
+                    <button id="end-walk" class="action-btn fish-btn" disabled onclick="endWalk()">
+                        <span class="material-icons btn-icon">check</span>结束遛弯
+                    </button>
+                </div>
+                <div class="fish-btn-pair">
+                    <button id="start-lunch" class="action-btn fish-btn" onclick="startLunch()">
+                        <span class="material-icons btn-icon">restaurant</span>出发吃饭
+                    </button>
+                    <button id="end-lunch" class="action-btn fish-btn" disabled onclick="endLunch()">
+                        <span class="material-icons btn-icon">check</span>结束吃饭
+                    </button>
+                </div>
+                <div class="fish-btn-pair">
+                    <button id="start-wc" class="action-btn fish-btn" onclick="startWC()">
+                        <span class="material-icons btn-icon">wc</span>上洗手间
+                    </button>
+                    <button id="end-wc" class="action-btn fish-btn" disabled onclick="endWC()">
+                        <span class="material-icons btn-icon">check</span>离开洗手间
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 今日统计 -->
+        <div class="stats-container">
+            <h2>今日统计</h2>
+            <div class="stats-box">
+                <div class="stat-item">
+                    <span class="stat-label">
+                        <span class="material-icons btn-icon">schedule</span>
+                        工作时间：
+                    </span>
+                    <span id="work-time" class="stat-value">0小时0分钟0秒</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">
+                        <span class="material-icons btn-icon">beach_access</span>
+                        摸鱼时间：
+                    </span>
+                    <span id="fish-time" class="stat-value">0小时0分钟0秒</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">
+                        <span class="material-icons btn-icon">pie_chart</span>
+                        摸鱼比例：
+                    </span>
+                    <span id="fish-ratio" class="stat-value">0%</span>
+                </div>
+            </div>
+            <button id="view-stats" class="stats-btn">
+                <span class="material-icons btn-icon">assessment</span>查看统计报表
+            </button>
+        </div>
     </div>
-
-    <!-- Page 2 -->
-    <div class="container hidden" id="page2">
-        <h1>综合环境系数选择</h1>
-        <label for="workEnvironment">工作环境系数：</label>
-        <select id="workEnvironment" name="workEnvironment" required onchange="calculateComprehensiveFactor()">
-            <option value="">请选择</option>
-            <option value="1.0">普通环境 (1.0)</option>
-            <option value="0.8">偏僻地区或郊区的工地、艰苦户外 (0.8)</option>
-            <option value="0.9">工厂、工地、辛苦户外 (0.9)</option>
-            <option value="1.1">CBD，体制内 (1.1)</option>
-        </select>
-
-        <label for="oppositeSexEnvironment">异性环境系数：</label>
-        <select id="oppositeSexEnvironment" name="oppositeSexEnvironment" required onchange="calculateComprehensiveFactor()">
-            <option value="">请选择</option>
-            <option value="1.0">周围好看的异性不多不少 (1.0)</option>
-            <option value="0.9">周围没有好看异性 (0.9)</option>
-            <option value="1.1">周围很多好异性 (1.1)</option>
-        </select>
-
-        <label for="colleagueEnvironment">同事环境系数：</label>
-        <select id="colleagueEnvironment" name="colleagueEnvironment" required onchange="calculateComprehensiveFactor()">
-            <option value="">请选择</option>
-            <option value="1.0">周围基本都是普通同事 (1.0)</option>
-            <option value="0.95">周围脑残同事较多 (0.95)</option>
-            <option value="1.05">周围优秀同事较多 (1.05)</option>
-        </select>
-
-        <p>综合环境系数：<span id="comprehensiveFactor">未计算</span></p>
-        <button type="button" onclick="previousPage1()">上一步</button>
-        <button type="button" onclick="nextPage2()" id="nextButton2" disabled>下一步</button>
+    
+    <!-- 统计报表弹窗 -->
+    <div id="stats-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeStatsModal()">×</span>
+            <h2>时间统计报表</h2>
+            
+            <div class="tab-container">
+                <div class="tab-buttons">
+                    <button class="tab-btn active" onclick="switchTab('week')">周统计</button>
+                    <button class="tab-btn" onclick="switchTab('month')">月统计</button>
+                </div>
+                
+                <div id="week-tab" class="tab-content active">
+                    <div class="chart-container">
+                        <canvas id="week-chart"></canvas>
+                    </div>
+                    <div class="table-container">
+                        <table id="week-table">
+                            <thead>
+                                <tr>
+                                    <th>日期</th>
+                                    <th>工作时间</th>
+                                    <th>摸鱼时间</th>
+                                    <th>摸鱼比例</th>
+                                </tr>
+                            </thead>
+                            <tbody id="week-table-body"></tbody>
+                        </table>
+                    </div>
+                </div>
+                
+                <div id="month-tab" class="tab-content">
+                    <div class="chart-container">
+                        <canvas id="month-chart"></canvas>
+                    </div>
+                    <div class="table-container">
+                        <table id="month-table">
+                            <thead>
+                                <tr>
+                                    <th>周次</th>
+                                    <th>工作时间</th>
+                                    <th>摸鱼时间</th>
+                                    <th>摸鱼比例</th>
+                                </tr>
+                            </thead>
+                            <tbody id="month-table-body"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
-
-    <!-- Page 3 -->
-    <div class="container hidden" id="page3">
-        <h1>工作时长信息</h1>
-        <label for="workHours">工作时长（小时/天）：</label>
-        <input type="number" id="workHours" name="workHours" min="0" max="24" step="0.01" required>
-        <p class="error" id="workHoursError"></p>
-
-        <label for="commuteHours">通勤时长（小时/天）：</label>
-        <input type="number" id="commuteHours" name="commuteHours" min="0" max="24" step="0.01" required>
-        <p class="error" id="commuteHoursError"></p>
-
-        <label for="leisureHours">摸鱼时长（小时/天）：</label>
-        <input type="number" id="leisureHours" name="leisureHours" min="0" max="24" step="0.01" required>
-        <p class="error" id="leisureHoursError"></p>
-
-        <button type="button" onclick="previousPage2()">上一步</button>
-        <button type="button" onclick="nextPage3()">下一步</button>
-    </div>
-
-    <!-- Page 4 -->
-    <div class="container hidden" id="page4">
-        <h1>学历系数选择</h1>
-        <select id="educationFactor" name="educationFactor" required>
-            <option value="1">高中及以下（系数 1）</option>
-            <option value="1.2">大专（系数 1.2）</option>
-            <option value="1.5">本科（系数 1.5）</option>
-            <option value="1.8">硕士（系数 1.8）</option>
-            <option value="2">博士及以上（系数 2）</option>
-        </select>
-        <button type="button" onclick="previousPage3()">上一步</button>
-        <button type="button" onclick="calculateHappiness()">计算</button>
-    </div>
-
-    <!-- Result Page -->
-    <div class="container hidden" id="resultPage">
-        <h1>计算结果</h1>
-        <p class="result" id="resultMessage"></p>
-        <button type="button" onclick="restart()">重新开始</button>
-    </div>
-
-    <script>
-        function nextPage1() {
-            const salary = document.getElementById('salary').value;
-            if (salary && salary > 0) {
-                document.getElementById('page1').classList.add('hidden');
-                document.getElementById('page2').classList.remove('hidden');
-            } else {
-                alert('请输入有效的月薪数值');
-            }
-        }
-
-        function calculateComprehensiveFactor() {
-            const workEnv = parseFloat(document.getElementById('workEnvironment').value);
-            const oppositeSexEnv = parseFloat(document.getElementById('oppositeSexEnvironment').value);
-            const colleagueEnv = parseFloat(document.getElementById('colleagueEnvironment').value);
-
-            if (workEnv && oppositeSexEnv && colleagueEnv) {
-                const comprehensiveFactor = workEnv * oppositeSexEnv * colleagueEnv;
-                document.getElementById('comprehensiveFactor').textContent = comprehensiveFactor.toFixed(2);
-                document.getElementById('nextButton2').disabled = false;
-            } else {
-                document.getElementById('comprehensiveFactor').textContent = '未计算';
-                document.getElementById('nextButton2').disabled = true;
-            }
-        }
-
-        function nextPage2() {
-            const comprehensiveFactor = document.getElementById('comprehensiveFactor').textContent;
-            if (comprehensiveFactor !== "未计算") {
-                document.getElementById('page2').classList.add('hidden');
-                document.getElementById('page3').classList.remove('hidden');
-            } else {
-                alert('请先计算综合环境系数');
-            }
-        }
-
-        function validateInput(inputId, errorId) {
-            const value = parseFloat(document.getElementById(inputId).value);
-            const errorElement = document.getElementById(errorId);
-            if (value < 0 || value > 24) {
-                errorElement.textContent = '请输入有效的时长数值（0-24小时）';
-            } else {
-                errorElement.textContent = '';
-            }
-        }
-
-        function validateWorkHours() {
-            const workHours = parseFloat(document.getElementById('workHours').value);
-            const commuteHours = parseFloat(document.getElementById('commuteHours').value);
-            const leisureHours = parseFloat(document.getElementById('leisureHours').value);
-            const errorElement = document.getElementById('workHoursError');
-
-            if (commuteHours + leisureHours >= workHours) {
-                errorElement.textContent = '通勤时长和摸鱼时长之和必须小于工作时长';
-            } else {
-                errorElement.textContent = '';
-            }
-        }
-
-        document.getElementById('workHours').addEventListener('input', function() {
-            validateInput('workHours', 'workHoursError');
-            validateWorkHours();
-        });
-
-        document.getElementById('commuteHours').addEventListener('input', function() {
-            validateInput('commuteHours', 'commuteHoursError');
-            validateWorkHours();
-        });
-
-        document.getElementById('leisureHours').addEventListener('input', function() {
-            validateInput('leisureHours', 'leisureHoursError');
-            validateWorkHours();
-        });
-
-        function nextPage3() {
-            const workHours = parseFloat(document.getElementById('workHours').value);
-            const commuteHours = parseFloat(document.getElementById('commuteHours').value);
-            const leisureHours = parseFloat(document.getElementById('leisureHours').value);
-
-            if (workHours >= 0 && workHours <= 24 && commuteHours >= 0 && commuteHours <= 24 && leisureHours >= 0 && leisureHours <= 24 && (commuteHours + leisureHours < workHours)) {
-                document.getElementById('page3').classList.add('hidden');
-                document.getElementById('page4').classList.remove('hidden');
-            } else {
-                alert('请输入有效的时长数值（0-24小时），且通勤时长和摸鱼时长之和必须小于工作时长');
-            }
-        }
-
-        function calculateHappiness() {
-            const salary = parseFloat(document.getElementById('salary').value);
-            const environmentFactor = parseFloat(document.getElementById('comprehensiveFactor').textContent);
-            const workHours = parseFloat(document.getElementById('workHours').value);
-            const commuteHours = parseFloat(document.getElementById('commuteHours').value);
-            const leisureHours = parseFloat(document.getElementById('leisureHours').value);
-            const educationFactor = parseFloat(document.getElementById('educationFactor').value);
-
-            // Calculate work cost-effectiveness
-            const workCostEffectiveness = (salary * environmentFactor) / (752.5 * (workHours + commuteHours - 0.5 * leisureHours) * educationFactor);
-
-            let message;
-            if (workCostEffectiveness < 0.8) {
-                message = '牛马也要吃草啊';
-            } else if (workCostEffectiveness >= 0.8 && workCostEffectiveness < 1.5) {
-                message = '有份工作还是好的';
-            } else if (workCostEffectiveness >= 1.5 && workCostEffectiveness < 2) {
-                message = '工作性价比不错哦！';
-            } else {
-                message = '你是神仙吧，不然怎么会有这么神仙的工作！';
-            }
-
-            document.getElementById('page4').classList.add('hidden');
-            document.getElementById('resultPage').classList.remove('hidden');
-            document.getElementById('resultMessage').textContent = '您的工作性价比为：' + workCostEffectiveness.toFixed(2) + '。' + message;
-        }
-
-        function previousPage1() {
-            document.getElementById('page2').classList.add('hidden');
-            document.getElementById('page1').classList.remove('hidden');
-        }
-
-        function previousPage2() {
-            document.getElementById('page3').classList.add('hidden');
-            document.getElementById('page2').classList.remove('hidden');
-        }
-
-        function previousPage3() {
-            document.getElementById('page4').classList.add('hidden');
-            document.getElementById('page3').classList.remove('hidden');
-        }
-
-        function restart() {
-            document.getElementById('resultPage').classList.add('hidden');
-            document.getElementById('page1').classList.remove('hidden');
-            document.getElementById('salary').value = '';
-            document.getElementById('workEnvironment').value = '';
-            document.getElementById('oppositeSexEnvironment').value = '';
-            document.getElementById('colleagueEnvironment').value = '';
-            document.getElementById('comprehensiveFactor').textContent = '未计算';
-            document.getElementById('workHours').value = '';
-            document.getElementById('commuteHours').value = '';
-            document.getElementById('leisureHours').value = '';
-            document.getElementById('educationFactor').value = '1';
-        }
-    </script>
-</body>
+    
+    <script src="storage.js"></script>
+    <script src="statistics.js"></script>
+    <script src="app.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  </body>
 </html>
